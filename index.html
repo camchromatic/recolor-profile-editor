@@ -435,10 +435,11 @@ function ghostSVG(){return placeholder(100,125,"GHOST","#8f8aa8");}
 function robotSVG(back){return placeholder(125,150,back?"ROBOT (back)":"ROBOT","#7d9a8c");}
 function emoteSVG(name){return placeholder(42,42,name,"#a39a8c");}
 function signSVG(ch){return placeholder(50,75,ch,"#a39a8c");}
-/* profile avatar: 250x300 space like the real one (mostly see-through), solid box where the character stands */
+/* profile avatar: fills the whole 250 wide x 300 tall space, like the real one */
 var profileAvatar=svgURI('<svg xmlns="http://www.w3.org/2000/svg" width="250" height="300" viewBox="0 0 250 300">'+
-  '<rect x="70.5" y="20.5" width="110" height="270" fill="#7f8c99" stroke="#000" stroke-opacity=".35"/>'+
-  '<text x="125.5" y="110" dominant-baseline="middle" font-family="Verdana" font-size="14" font-weight="bold" text-anchor="middle" fill="#fff">AVATAR</text></svg>');
+  '<rect x=".5" y=".5" width="249" height="299" fill="#7f8c99" stroke="#000" stroke-opacity=".35"/>'+
+  '<text x="125" y="70" dominant-baseline="middle" font-family="Verdana" font-size="16" font-weight="bold" text-anchor="middle" fill="#fff">AVATAR</text>'+
+  '<text x="125" y="94" dominant-baseline="middle" font-family="Verdana" font-size="13" text-anchor="middle" fill="#fff">250 × 300</text></svg>');
 /* real recolor.me images, loaded from its website. Folder rules worked out by testing. */
 var RCM="https://recolor.me";
 function numId(v){v=String(v).trim();return /^\d{1,9}$/.test(v)?parseInt(v,10):null;}
