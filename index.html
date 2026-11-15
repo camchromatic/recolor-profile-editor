@@ -773,16 +773,18 @@ function sure(el,msg){
 var PRESETS=Array.isArray(window.BB_PRESETS)?window.BB_PRESETS.filter(function(p){return p&&typeof p.code==="string";}):[];
 var tplSel=document.getElementById("templates");
 function fillTemplates(list){
-  tplSel.length=1;
+  var keep=tplSel.value;tplSel.length=1;
   list.forEach(function(p,i){var o=document.createElement("option");o.value=String(i);o.textContent=p.name||("Template "+(i+1));if(p.description)o.title=p.description;tplSel.appendChild(o);});
   tplSel.hidden=!list.length;
+  if(+keep<list.length)tplSel.value=keep;
 }
 fillTemplates(PRESETS);
+var tplCur="";  // the template that's loaded, so the menu keeps showing its name
 tplSel.addEventListener("change",function(){
-  var list=devOn?devList:PRESETS,p=list[+tplSel.value];tplSel.value="";
-  if(!p)return;
-  if(code.value.trim()&&code.value!==p.code&&!sure(tplSel,'Replace your code with "'+(p.name||"this template")+'"?'))return;
-  code.value=p.code;draw();save();
+  var v=tplSel.value,list=devOn?devList:PRESETS,p=list[+v];
+  if(v===""||!p){tplCur="";return;}
+  if(code.value.trim()&&code.value!==p.code&&!sure(tplSel,'Replace your code with "'+(p.name||"this template")+'"?')){tplSel.value=tplCur;return;}
+  code.value=p.code;tplCur=v;draw();save();
 });
 
 /* Preset manager: only with ?dev, and only on your own computer */
@@ -899,8 +901,8 @@ function lookupName(){
   },500);
 }
 document.getElementById("reroll").addEventListener("click",function(){seed=(seed*7+13)%100000;draw();});
-document.getElementById("sample").addEventListener("click",function(){if(code.value===SAMPLE||sure(this,"Replace your code with the example?")){code.value=SAMPLE;draw();save();}});
-document.getElementById("clear").addEventListener("click",function(){if(!code.value||sure(this,"Clear all your code?")){code.value="";draw();save();code.focus();}});
+document.getElementById("sample").addEventListener("click",function(){if(code.value===SAMPLE||sure(this,"Replace your code with the example?")){code.value=SAMPLE;tplSel.value=tplCur="";draw();save();}});
+document.getElementById("clear").addEventListener("click",function(){if(!code.value||sure(this,"Clear all your code?")){code.value="";tplSel.value=tplCur="";draw();save();code.focus();}});
 document.getElementById("copy").addEventListener("click",function(){
   var b=this;function done(){b.textContent="Copied!";setTimeout(function(){b.textContent="Copy code";},1500);}
   if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(code.value).then(done,function(){code.select();document.execCommand("copy");done();});
