@@ -94,6 +94,12 @@ textarea#code {
 textarea#code:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
 @media (max-width: 600px) { textarea#code { min-height: 300px; } }
 #count { font-size: 14px; color: var(--muted); }
+/* Shortcut buttons above the code box */
+.tools { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-bottom: 10px; }
+.tools .grp { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.tools .grp-label { font: 500 11px/1 Arial, Helvetica, sans-serif; text-transform: uppercase; letter-spacing: .09em; color: var(--muted); margin-right: 2px; }
+.tools button { padding: 4px 9px; font-size: 13px; border-radius: 8px; font-weight: 600; }
+.tools button:hover { border-color: var(--accent); }
 #count.over { color: var(--warn); font-weight: 700; }
 .stage { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 18px; overflow: auto; max-width: 100%; }
 .note { color: var(--muted); font-size: 14px; margin: 10px 2px 0; }
@@ -241,6 +247,32 @@ textarea#code:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
       <button id="sample" type="button" title="Replace your code with a sample bio that shows off lots of tags">Load example</button>
       <button id="clear" type="button">Clear</button>
     </div>
+    <div class="tools" id="tools" aria-label="Shortcuts">
+      <div class="grp"><span class="grp-label">Text</span>
+        <button type="button" data-snip="b" title="Bold (Ctrl+B)"><b>B</b></button>
+        <button type="button" data-snip="i" title="Italic (Ctrl+I)"><i>I</i></button>
+        <button type="button" data-snip="u" title="Underline (Ctrl+U)"><u>U</u></button>
+        <button type="button" data-snip="s" title="Strike"><s>S</s></button>
+        <button type="button" data-snip="color" title="Text colour">Colour</button>
+        <button type="button" data-snip="size" title="Text size (1 to 7)">Size</button>
+        <button type="button" data-snip="center" title="Centre">Centre</button>
+      </div>
+      <div class="grp"><span class="grp-label">Add</span>
+        <button type="button" data-snip="url" title="Link">Link</button>
+        <button type="button" data-snip="img" title="Image">Image</button>
+        <button type="button" data-snip="list" title="List">List</button>
+        <button type="button" data-snip="rule" title="Divider line">Divider</button>
+        <button type="button" data-snip="spoiler" title="Spoiler">Spoiler</button>
+      </div>
+      <div class="grp"><span class="grp-label">Layout</span>
+        <button type="button" data-snip="picright" title="Centred text on the left, picture on the right">Text + picture</button>
+        <button type="button" data-snip="picleft" title="Picture on the left, centred text on the right">Picture + text</button>
+        <button type="button" data-snip="cols" title="Two columns side by side">2 columns</button>
+        <button type="button" data-snip="box" title="Coloured box">Box</button>
+        <button type="button" data-snip="solid" title="Solid background for your whole bio (hides the faded avatar)">Solid background</button>
+        <button type="button" data-snip="more" title="A Read more button that opens hidden text">Read more</button>
+      </div>
+    </div>
     <textarea id="code" spellcheck="false" aria-label="BBCode"></textarea>
   </section>
 
@@ -283,6 +315,7 @@ textarea#code:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
         <li><b>Type or paste</b> your BBCode on the left. The preview updates as you type.</li>
         <li><b>Citizen ID</b> shows that user's avatar and name in the profile header.</li>
         <li><b>Copy code</b>, then paste it into your bio on recolor.me. Bios allow 10,000 characters.</li>
+        <li><b>Shortcut buttons</b> above the code wrap the text you've selected, or add ready-made code with the part to replace highlighted. Ctrl+B, Ctrl+I and Ctrl+U work too, and Ctrl+Z undoes.</li>
         <li>Your draft is saved in this browser.</li>
       </ul>
     </section>
@@ -662,6 +695,41 @@ lookButtons.forEach(function(b){b.addEventListener("click",function(){
   markLook();try{localStorage.setItem("bb-look",JSON.stringify({mode:root.dataset.mode||"light"}));}catch(e){}
 });});
 markLook();
+/* Shortcut buttons: wrap the selected text, or insert a ready-made piece of code and select the part to replace */
+var SNIPS={
+  b:"[b]{{*text}}[/b]", i:"[i]{{*text}}[/i]", u:"[u]{{*text}}[/u]", s:"[s]{{*text}}[/s]",
+  color:"[color=#6f86ff]{{*text}}[/color]", size:"[size=4]{{*text}}[/size]", center:"[center]{{*text}}[/center]",
+  url:"[url=https://{{example.com}}]{{*link text}}[/url]", img:"[img]{{*IMAGE URL}}[/img]",
+  list:"[list]\n[*]{{*first item}}\n[*]second item\n[/list]", rule:"[rule]{{*}}", spoiler:"[spoiler]{{*secret}}[/spoiler]",
+  picright:"[columns][center]{{*Your text here}}[/center][nextcol][img]{{IMAGE URL}}[/img][/columns]",
+  picleft:"[columns][img]{{IMAGE URL}}[/img][nextcol][center]{{*Your text here}}[/center][/columns]",
+  cols:"[columns]{{*Left side}}[nextcol]Right side[/columns]",
+  box:"[box bgcolor=eef0ff radius=10 padding=8]{{*text}}[/box]",
+  solid:"[box bgcolor=ffffff radius=0 padding=10]{{*Your whole bio goes here}}[/box]",
+  more:"[hidden=Read more]{{*Hidden text}}[/hidden]"
+};
+function insertSnippet(key){
+  var tpl=SNIPS[key];if(!tpl)return;
+  var st=code.selectionStart,en=code.selectionEnd,sel=code.value.slice(st,en);
+  var marks=[],out="",re=/\{\{(\*?)([^}]*)\}\}/g,last=0,m;
+  while((m=re.exec(tpl))){
+    out+=tpl.slice(last,m.index);
+    var txt=(m[1]&&sel)?sel:m[2];
+    marks.push({star:!!m[1],from:out.length,to:out.length+txt.length,ph:!(m[1]&&sel)});
+    out+=txt;last=m.index+m[0].length;
+  }
+  out+=tpl.slice(last);
+  code.focus();code.setSelectionRange(st,en);
+  /* insertText keeps Ctrl+Z working; fall back if the browser doesn't support it */
+  if(!document.execCommand||!document.execCommand("insertText",false,out)){code.setRangeText(out,st,en,"end");code.dispatchEvent(new Event("input"));}
+  var pick=marks.filter(function(k){return k.ph&&k.to>k.from;})[0];
+  if(pick)code.setSelectionRange(st+pick.from,st+pick.to);else code.setSelectionRange(st+out.length,st+out.length);
+}
+document.getElementById("tools").addEventListener("click",function(e){var b=e.target.closest("[data-snip]");if(b)insertSnippet(b.getAttribute("data-snip"));});
+code.addEventListener("keydown",function(e){
+  if(!(e.ctrlKey||e.metaKey)||e.altKey||e.shiftKey)return;
+  var k={b:"b",i:"i",u:"u"}[e.key.toLowerCase()];if(k){e.preventDefault();insertSnippet(k);}
+});
 /* Tips and tricks box */
 var help=document.getElementById("help");
 document.getElementById("help-btn").addEventListener("click",function(){help.showModal();});
