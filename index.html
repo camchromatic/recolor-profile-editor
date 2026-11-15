@@ -97,7 +97,8 @@ textarea#code:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
 #templates { max-width: 220px; }
 /* Preset manager (only with ?dev on your own computer) */
 #dev { margin-top: 16px; }
-#dev[hidden] { display: none; }
+#dev[hidden], #saveBox[hidden] { display: none; }
+#saveName { font: 14px Arial, Helvetica, sans-serif; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; width: 150px; }
 #dev .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; }
 #dev input[type=text] { font: 14px Arial, Helvetica, sans-serif; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; }
 #dev .list { display: flex; flex-direction: column; gap: 6px; margin: 10px 0; }
@@ -261,7 +262,7 @@ textarea#code:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
       <button id="sample" type="button" title="Replace your code with a sample bio that shows off lots of tags">Load example</button>
       <button id="clear" type="button">Clear</button>
       <select id="templates" aria-label="Start from a template" hidden><option value="">Templates…</option></select>
-      <button id="savePreset" type="button" title="Save what's in the code box as a template (only you see this button)" hidden>Save as preset</button>
+      <span id="saveBox" hidden><input type="text" id="saveName" placeholder="Preset name" maxlength="40" aria-label="Preset name"> <button id="savePreset" type="button" title="Save what's in the code box as a template (only you see this)">Save as preset</button></span>
       <span class="msg" id="saveMsg" aria-live="polite"></span>
     </div>
     <div class="tools" id="tools" aria-label="Shortcuts">
@@ -321,21 +322,9 @@ textarea#code:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
   <!-- Preset manager: only shows when opened with ?dev on your own computer (file, localhost or 127.0.0.1) -->
   <section class="panel" id="dev" hidden>
     <h2>Preset manager</h2>
-    <p class="msg">Only you see this. Type code in the code box and press <b>Save as preset</b>. When the tool runs through <code>dev-server.py</code>, every change here goes straight into <code>presets.js</code>. Otherwise, use <b>Download presets.js</b> and put it next to <code>index.html</code>. The public Templates menu reads that file.</p>
-    <div class="row">
-      <input type="text" id="devName" placeholder="Preset name" maxlength="40">
-      <input type="text" id="devDesc" placeholder="Short description (optional)" maxlength="120" size="34">
-      <button type="button" id="devAdd" class="primary">Add the code box as a preset</button>
-    </div>
-    <div class="row">
-      <label class="msg">Upload presets (.txt or .bbcode, one preset per file): <input type="file" id="devFiles" accept=".txt,.bbcode,text/plain" multiple></label>
-    </div>
+    <p class="msg">Only you see this. To add a preset: put the code in the code box, type a name next to <b>Save as preset</b> and press it. It goes straight into the Templates menu.</p>
     <div class="list" id="devList"></div>
-    <div class="row">
-      <button type="button" id="devDownload" class="primary">Download presets.js</button>
-      <button type="button" id="devReset">Start over from presets.js</button>
-      <span class="msg" id="devMsg"></span>
-    </div>
+    <p class="msg" id="devMsg"></p>
   </section>
 </main>
 
@@ -769,6 +758,16 @@ code.addEventListener("keydown",function(e){
   if(!(e.ctrlKey||e.metaKey)||e.altKey||e.shiftKey)return;
   var k={b:"b",i:"i",u:"u"}[e.key.toLowerCase()];if(k){e.preventDefault();insertSnippet(k);}
 });
+/* "Are you sure?" without pop-up boxes (some browsers block them): the first click asks, a second click within 4 seconds does it. */
+function sure(el,msg){
+  var key=el.tagName==="SELECT"?el.value:"1";
+  if(el.dataset.armed===key){clearTimeout(el._t);delete el.dataset.armed;if(el.dataset.txt){el.textContent=el.dataset.txt;delete el.dataset.txt;}saveMsg("");return true;}
+  clearTimeout(el._t);el.dataset.armed=key;
+  if(el.tagName==="BUTTON"){if(!el.dataset.txt)el.dataset.txt=el.textContent;el.textContent="Sure? Click again";}
+  else saveMsg(msg+" Pick it again to confirm.");
+  el._t=setTimeout(function(){delete el.dataset.armed;if(el.dataset.txt){el.textContent=el.dataset.txt;delete el.dataset.txt;}},4000);
+  return false;
+}
 /* Templates menu for visitors (from presets.js) */
 var PRESETS=Array.isArray(window.BB_PRESETS)?window.BB_PRESETS.filter(function(p){return p&&typeof p.code==="string";}):[];
 var tplSel=document.getElementById("templates");
@@ -781,16 +780,16 @@ fillTemplates(PRESETS);
 tplSel.addEventListener("change",function(){
   var list=devOn?devList:PRESETS,p=list[+tplSel.value];tplSel.value="";
   if(!p)return;
-  if(code.value.trim()&&code.value!==p.code&&!confirm('Replace your code with "'+(p.name||"this template")+'"?'))return;
+  if(code.value.trim()&&code.value!==p.code&&!sure(tplSel,'Replace your code with "'+(p.name||"this template")+'"?'))return;
   code.value=p.code;draw();save();
 });
 
 /* Preset manager: only with ?dev, and only on your own computer */
 var devOn=/[?&]dev\b/.test(location.search)&&(location.protocol==="file:"||/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname));
-var DEV_KEY="bb-dev-presets",devList=[];
+var devList=[];
 function devSave(){
-  try{localStorage.setItem(DEV_KEY,JSON.stringify(devList));}catch(e){}fillTemplates(devList);devRender();
-  // With dev-server.py running, write presets.js straight away. Otherwise it's kept in this browser until you download.
+  fillTemplates(devList);devRender();
+  // dev-server.py writes presets.js straight away.
   return fetch("/__save-presets",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(devList)})
     .then(function(r){if(!r.ok)throw 0;return true;}).catch(function(){return false;});
 }
@@ -798,7 +797,7 @@ function saveMsg(t){var m=document.getElementById("saveMsg");m.textContent=t;cle
 function devMsg(t,warn){var m=document.getElementById("devMsg");m.textContent=t;m.className="msg"+(warn?" warn":"");}
 function devRender(){
   var box=document.getElementById("devList");box.innerHTML="";
-  if(!devList.length){box.innerHTML='<p class="msg">No presets yet. Add the code box, or upload files.</p>';return;}
+  if(!devList.length){box.innerHTML='<p class="msg">No presets yet.</p>';return;}
   devList.forEach(function(p,i){
     var row=document.createElement("div");row.className="item";
     row.innerHTML='<input type="text" class="nm" maxlength="40" aria-label="Name"><input type="text" class="ds" maxlength="120" aria-label="Description" placeholder="Description">'+
@@ -811,53 +810,30 @@ function devRender(){
     row.addEventListener("click",function(e){
       var act=e.target.getAttribute&&e.target.getAttribute("data-act");if(!act)return;
       if(act==="load"){code.value=p.code;draw();save();devMsg('Loaded "'+p.name+'" into the code box.');}
-      if(act==="update"){if(confirm('Replace "'+p.name+'" with what\'s in the code box?')){p.code=code.value;devSave();devMsg('Updated "'+p.name+'".');}}
+      if(act==="update"){if(sure(e.target,'Replace "'+p.name+'" with what\'s in the code box?')){p.code=code.value;devSave().then(function(ok){devMsg(ok?'Updated "'+p.name+'".':"Couldn't save. Ask Claude to start the preset helper.",!ok);});}}
       if(act==="up"&&i>0){devList.splice(i-1,0,devList.splice(i,1)[0]);devSave();}
       if(act==="down"&&i<devList.length-1){devList.splice(i+1,0,devList.splice(i,1)[0]);devSave();}
-      if(act==="del"&&confirm('Delete "'+p.name+'" from the list? (presets.js only changes when you download a new one.)')){devList.splice(i,1);devSave();}
+      if(act==="del"&&sure(e.target,'Delete "'+p.name+'" from the presets?')){devList.splice(i,1);devSave();}
     });
     box.appendChild(row);
   });
 }
 if(devOn){
-  try{var stored=JSON.parse(localStorage.getItem(DEV_KEY)||"null");devList=Array.isArray(stored)?stored:PRESETS.map(function(p){return {name:p.name||"",description:p.description||"",code:p.code};});}catch(e){devList=PRESETS.slice();}
+  devList=PRESETS.map(function(p){return {name:p.name||"",description:p.description||"",code:p.code};});
   document.getElementById("dev").hidden=false;fillTemplates(devList);devRender();
-  var sp=document.getElementById("savePreset");sp.hidden=false;
+  var sp=document.getElementById("savePreset");document.getElementById("saveBox").hidden=false;
+  document.getElementById("saveName").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();sp.click();}});
   sp.addEventListener("click",function(){
     if(!code.value.trim()){saveMsg("The code box is empty.");return;}
-    var nm=(prompt("Name for this preset:")||"").trim().slice(0,40);
-    if(!nm)return;
+    var nm=document.getElementById("saveName").value.trim().slice(0,40);
+    if(!nm){saveMsg("Type a name first.");document.getElementById("saveName").focus();return;}
     var old=devList.filter(function(p){return p.name.toLowerCase()===nm.toLowerCase();})[0];
-    if(old){if(!confirm('"'+old.name+'" already exists. Replace it with this code?'))return;old.code=code.value;nm=old.name;}
+    if(old){if(!sure(sp,'"'+old.name+'" already exists. Replace it with this code?')){saveMsg('"'+old.name+'" already exists. Click again to replace it.');return;}old.code=code.value;nm=old.name;}
     else devList.push({name:nm,description:"",code:code.value});
     devSave().then(function(ok){
-      saveMsg(ok?'Saved "'+nm+'" to presets.js.':'Saved "'+nm+'" in this browser. To publish it, use Download presets.js below.');
+      if(ok)document.getElementById("saveName").value="";
+      saveMsg(ok?'Saved "'+nm+'". It\'s in the Templates menu now.':"Couldn't save. Ask Claude to start the preset helper (dev-server.py).");
     });
-  });
-  document.getElementById("devAdd").addEventListener("click",function(){
-    var nm=document.getElementById("devName").value.trim(),ds=document.getElementById("devDesc").value.trim();
-    if(!nm){devMsg("Give the preset a name first.",true);return;}
-    if(!code.value.trim()){devMsg("The code box is empty.",true);return;}
-    devList.push({name:nm,description:ds,code:code.value});devSave();
-    document.getElementById("devName").value="";document.getElementById("devDesc").value="";devMsg('Added "'+nm+'".');
-  });
-  document.getElementById("devFiles").addEventListener("change",function(e){
-    var files=[].slice.call(e.target.files||[]),done=0;
-    files.forEach(function(f){var r=new FileReader();r.onload=function(){
-      devList.push({name:f.name.replace(/\.[^.]+$/,"").replace(/[_-]+/g," ").trim().slice(0,40),description:"",code:String(r.result).replace(/\r\n?/g,"\n").replace(/^\uFEFF/,"")});
-      if(++done===files.length){devSave();devMsg("Added "+done+" preset"+(done>1?"s":"")+". Check the names, then download presets.js.");e.target.value="";}
-    };r.readAsText(f);});
-  });
-  document.getElementById("devDownload").addEventListener("click",function(){
-    var body="// Starting templates for the BBCode Previewer's \"Templates\" menu.\n// Made with the Preset manager: open index.html?dev on your own computer, then \"Download presets.js\".\n"+
-      "window.BB_PRESETS = "+JSON.stringify(devList.map(function(p){return {name:p.name,description:p.description||"",code:p.code};}),null,2).replace(/</g,"\\u003c")+";\n";
-    var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([body],{type:"text/javascript"}));a.download="presets.js";
-    document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},1000);
-    devMsg("Downloaded presets.js with "+devList.length+" preset"+(devList.length===1?"":"s")+". Put it next to index.html (replace the old one).");
-  });
-  document.getElementById("devReset").addEventListener("click",function(){
-    if(!confirm("Throw away your unsaved changes here and start again from the current presets.js?"))return;
-    devList=PRESETS.map(function(p){return {name:p.name||"",description:p.description||"",code:p.code};});devSave();devMsg("Back to what presets.js has.");
   });
 }
 
@@ -922,8 +898,8 @@ function lookupName(){
   },500);
 }
 document.getElementById("reroll").addEventListener("click",function(){seed=(seed*7+13)%100000;draw();});
-document.getElementById("sample").addEventListener("click",function(){if(code.value===SAMPLE||confirm("Replace your code with the example?")){code.value=SAMPLE;draw();save();}});
-document.getElementById("clear").addEventListener("click",function(){if(!code.value||confirm("Clear all your code?")){code.value="";draw();save();code.focus();}});
+document.getElementById("sample").addEventListener("click",function(){if(code.value===SAMPLE||sure(this,"Replace your code with the example?")){code.value=SAMPLE;draw();save();}});
+document.getElementById("clear").addEventListener("click",function(){if(!code.value||sure(this,"Clear all your code?")){code.value="";draw();save();code.focus();}});
 document.getElementById("copy").addEventListener("click",function(){
   var b=this;function done(){b.textContent="Copied!";setTimeout(function(){b.textContent="Copy code";},1500);}
   if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(code.value).then(done,function(){code.select();document.execCommand("copy");done();});
