@@ -319,6 +319,38 @@ textarea#code:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
         <li><code>:emote:</code> <code>[viewername]</code></li>
       </ul>
     </section>
+    <section>
+      <h3>Sizes</h3>
+      <ul>
+        <li>The bio box shows <b>520 × 310px</b>. About <b>500px</b> of the width is usable; the scrollbar takes the rest.</li>
+        <li>Full-width images: up to about <b>500px</b> wide. Wider ones shrink to fit.</li>
+        <li>Two columns: about <b>240px</b> each. Banners: about <b>500 × 100–150px</b>. Icons and buttons: <b>32–64px</b>.</li>
+        <li>Only height resizes an image: <code>[img height=100]</code>. Width is ignored.</li>
+        <li>Forum posts can be up to <b>740px</b> wide.</li>
+        <li>Your avatar sits behind the top-left of the bio, about <b>200 × 90px</b>, faded.</li>
+      </ul>
+    </section>
+    <section>
+      <h3>Box tricks</h3>
+      <ul>
+        <li><b>Solid background:</b> wrap your whole bio in <code>[box bgcolor=ffffff radius=0 padding=10]</code>…<code>[/box]</code>. It hides the faded avatar and keeps your colours the same in Night mode.</li>
+        <li>Boxes shrink to fit what's inside. They stretch across once a line of text (or an image about 500px wide) fills them.</li>
+        <li><b>Border:</b> a box inside a box: <code>[box bgcolor=999999 padding=3][box bgcolor=ffffff]</code>…<code>[/box][/box]</code></li>
+        <li><b>Pill labels:</b> <code>radius=20 padding=4</code>. <b>Square corners:</b> <code>radius=0</code>.</li>
+        <li><b>Framed buttons:</b> put <code>[url=…][img]…[/img][/url]</code> inside a bordered box, with a small label under it.</li>
+      </ul>
+    </section>
+    <section>
+      <h3>Other tricks</h3>
+      <ul>
+        <li><b>Set your own text colour</b> with <code>[color]</code>: Night mode turns the default text light grey.</li>
+        <li><code>[img right]</code> (no <code>align=</code>) floats over the bio, great for a big character picture. <code>[img align=right]</code> lets text wrap around it.</li>
+        <li>If Enter doesn't add space, use <code>[br]</code>.</li>
+        <li>Put formatting inside each <code>[columns]</code> cell, not around the whole thing.</li>
+        <li><code>[rule]</code> can break the code after it; put a <code>[size]</code> tag right after.</li>
+        <li>Tags left open at the very end still work, which saves characters.</li>
+      </ul>
+    </section>
   </div>
 </dialog>
 
@@ -636,7 +668,7 @@ document.getElementById("help-btn").addEventListener("click",function(){help.sho
 document.getElementById("help-close").addEventListener("click",function(){help.close();});
 help.addEventListener("click",function(e){if(e.target===help)help.close();});
 
-var SAMPLE="[center][size=5][gradient start=#ff6fa8 end=#6f8bff]Welcome to my profile![/gradient][/size]\n[size=2][color=#777]artist · bbcode wizard · site lurker[/color][/size]\n[box bgcolor=f6e1ec radius=10 padding=8][b]About me[/b]\nI draw cute monsters and make themes. :uwu:[/box][columns][box bgcolor=e1f0f6 padding=6][b]Likes[/b][/box]\npastels · dragons :dragon:[nextcol][box bgcolor=eef6e1 padding=6][b]Friends[/b][/box]\n[selfie]16733[/selfie][selfie big]16733[/selfie][/columns][hidden=Read more color=pink][rule]Hi [viewername]! Thanks for visiting. :heart:\n[av win]16733[/av]\n[list][*]bubble tea :boba:[*]rainy days[*]old forums[/list]\n[spoiler]secret![/spoiler] [brick=3]You found it![/brick]\n\n[bar=70 color=#ff6fa8]Art goal 70%[/bar][/hidden][/center]";
+var SAMPLE="[center][size=5][gradient start=#6f86ff end=#c77dff]Your Name Here[/gradient][/size]\n[size=2][color=#777]pronouns · time zone · a few words about you[/color][/size]\n[box bgcolor=eef0ff radius=10 padding=8][b]About me[/b]\nWrite a little about yourself here. :smile:[/box][columns][box bgcolor=eef7ec padding=6][b]Likes[/b][/box]\nart · music :music:[nextcol][box bgcolor=fff1e3 padding=6][b]Dislikes[/b][/box]\nrainy Mondays :rain:[/columns][hidden=Read more]Hi [viewername]! Thanks for visiting. :wave:\n[list][*]Favourite colour[*]Favourite food[*]Favourite game[/list]\n[spoiler]a secret[/spoiler] [brick=3]You found it![/brick]\n\n[bar=60 color=#6f86ff]Goal progress 60%[/bar][/hidden][/center]";
 var KEY="rcm-bbcode-draft";
 function load(){try{var s=localStorage.getItem(KEY);if(s!=null)return s;}catch(e){}return SAMPLE;}
 function save(){try{localStorage.setItem(KEY,code.value);}catch(e){}}
