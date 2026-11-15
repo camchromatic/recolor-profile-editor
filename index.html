@@ -228,11 +228,6 @@ textarea#code:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
 .night .bio{background:transparent}
 .night .bio_content{color:#b4b4b4}
 .night .rcm .profile_name{color:#ddd;text-shadow:none}
-/* forum post bubble */
-.post_container{width:740px;margin:0 auto}
-.post_bubble{background:#f0f0f0;border-radius:12px;box-shadow:rgba(0,0,0,.42) 0 1px 3px;position:relative}
-.post_message{position:relative;padding:31px 10px 13px;overflow-wrap:break-word;line-height:25px;font-size:16px}
-.post_message img{vertical-align:middle;max-width:99%}
 </style>
 </head>
 <body>
@@ -301,12 +296,6 @@ textarea#code:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
   <section class="panel">
     <div class="bar">
       <h2 class="grow">Preview</h2>
-      <label>Show as
-        <select id="mode">
-          <option value="bio">Profile bio</option>
-          <option value="post">Forum post</option>
-        </select>
-      </label>
     </div>
     <div class="bar">
       <label id="whoBox">Name <input class="who" id="uname" value="" placeholder="Username" maxlength="30" aria-label="Username"> ID <input class="who id" id="uid" value="" placeholder="Citizen ID" inputmode="numeric" maxlength="8" aria-label="User ID"></label>
@@ -398,7 +387,6 @@ textarea#code:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
         <li>Full-width images: up to about <b>500px</b> wide. Wider ones shrink to fit.</li>
         <li>Two columns: about <b>240px</b> each. Banners: about <b>500 × 100–150px</b>. Icons and buttons: <b>32–64px</b>.</li>
         <li>Only height resizes an image: <code>[img height=100]</code>. Width is ignored.</li>
-        <li>Forum posts can be up to <b>740px</b> wide.</li>
         <li>Your avatar sits behind the top-left of the bio, about <b>200 × 90px</b>, faded.</li>
       </ul>
     </section>
@@ -727,7 +715,7 @@ function toHTML(src){
 
 /* ---------- UI ---------- */
 var code=document.getElementById("code"),stage=document.getElementById("stage"),count=document.getElementById("count");
-var mode=document.getElementById("mode"),full=document.getElementById("full"),fit=document.getElementById("fit"),night=document.getElementById("night");
+var full=document.getElementById("full"),fit=document.getElementById("fit"),night=document.getElementById("night");
 /* Theme (Dark / Gray / Light), remembered in this browser, like the other tools */
 var root=document.documentElement,lookButtons=document.querySelectorAll(".seg [data-mode]");
 function markLook(){lookButtons.forEach(function(b){b.classList.toggle("on",b.dataset.mode===(root.dataset.mode||"light"));});}
@@ -885,22 +873,20 @@ function draw(){
   document.getElementById("reroll").hidden=!/\[(rand|random|d6|d20)[\]= ]/i.test(code.value);
   var html=toHTML(code.value);
   var n=code.value.length;count.textContent=n.toLocaleString()+" / 10,000";count.className=n>10000?"over":"";
-  stage.className="stage"+(mode.value==="bio"?" is-bio":"")+(full.checked?" full":"")+(fit.checked?" fitcheck":"")+(night.checked?" night":"");
-  document.getElementById("whoBox").style.display=mode.value==="bio"?"":"none";
+  stage.className="stage is-bio"+(full.checked?" full":"")+(fit.checked?" fitcheck":"")+(night.checked?" night":"");
   var uname=escapeHTML(document.getElementById("uname").value.trim()||"Username"),rawId=document.getElementById("uid").value.replace(/\D/g,""),uid=escapeHTML(rawId||"12345");
-  if(mode.value==="bio")stage.innerHTML='<div class="bio_container rcm">'+
+  stage.innerHTML='<div class="bio_container rcm">'+
     '<span class="profile_avatar" title="Your avatar (set on recolor.me, not in your code)"><span class="'+(numId(rawId)?"imgflip":"")+'" style="display:inline-block"><img alt="" class="backshadow" src="'+(numId(rawId)?avURL(numId(rawId)):profileAvatar)+'" data-fb="'+profileAvatar+'"></span></span>'+
     '<h2 class="profile_name"><span class="citizen_id">Citizen '+uid+': </span><span class="citizen_name">'+uname+'</span></h2>'+
     '<div class="profile_options"><span class="button button_green">Items</span><span class="button button_green">Pose</span><span class="button">Chat</span></div>'+
     '<div class="bio"><div class="bio_content">'+html+"</div></div></div>";
-  else stage.innerHTML='<div class="post_container rcm"><div class="post_bubble"><div class="post_message">'+html+"</div></div></div>";
   checkFit();
 }
 /* fit check: does the bio fit the 310px box without scrolling? */
 function checkFit(){
   var msg=document.getElementById("fitMsg"),box=stage.querySelector(".bio_content");
   stage.classList.remove("over","opened");
-  if(!fit.checked||mode.value!=="bio"||!box){msg.hidden=true;return;}
+  if(!fit.checked||!box){msg.hidden=true;return;}
   msg.hidden=false;
   var opened=[].some.call(box.querySelectorAll(".bbcode_hidden_content"),function(h){return !h.classList.contains("hidden");});
   if(opened){stage.classList.add("opened");msg.className="info";msg.textContent="Opened: the bio now scrolls, like it will on recolor.me. Click your button again to close it.";return;}
@@ -913,7 +899,7 @@ full.addEventListener("change",function(){if(full.checked)fit.checked=false;});
 stage.addEventListener("load",function(e){if(e.target.tagName==="IMG")checkFit();},true);
 var timer;function onInput(){clearTimeout(timer);timer=setTimeout(function(){draw();save();},120);}
 code.addEventListener("input",onInput);
-[mode,full,night].forEach(function(el){el.addEventListener("change",draw);});
+[full,night].forEach(function(el){el.addEventListener("change",draw);});
 ["uname","uid"].forEach(function(i){var el=document.getElementById(i);
   try{var v=localStorage.getItem("rcm-"+i);if(v)el.value=v;}catch(e){}
   el.addEventListener("input",function(){try{localStorage.setItem("rcm-"+i,el.value);}catch(e){}onInput();if(i==="uid")lookupName();});});
