@@ -94,6 +94,20 @@ textarea#code {
 textarea#code:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
 @media (max-width: 600px) { textarea#code { min-height: 300px; } }
 #count { font-size: 14px; color: var(--muted); }
+#templates { max-width: 220px; }
+/* Preset manager (only with ?dev on your own computer) */
+#dev { margin-top: 16px; }
+#dev[hidden] { display: none; }
+#dev .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; }
+#dev input[type=text] { font: 14px Arial, Helvetica, sans-serif; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; }
+#dev .list { display: flex; flex-direction: column; gap: 6px; margin: 10px 0; }
+#dev .item { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+#dev .item .nm { flex: 1 1 160px; }
+#dev .item .ds { flex: 2 1 220px; }
+#dev .item .len { color: var(--muted); font-size: 13px; min-width: 80px; }
+#dev .item button { padding: 4px 9px; font-size: 13px; }
+#dev .msg { color: var(--muted); font-size: 14px; }
+#dev .warn { color: var(--warn); }
 /* Shortcut buttons above the code box */
 .tools { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-bottom: 10px; }
 .tools .grp { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
@@ -246,6 +260,7 @@ textarea#code:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
       <button id="copy" type="button" class="primary">Copy code</button>
       <button id="sample" type="button" title="Replace your code with a sample bio that shows off lots of tags">Load example</button>
       <button id="clear" type="button">Clear</button>
+      <select id="templates" aria-label="Start from a template" hidden><option value="">Templates…</option></select>
     </div>
     <div class="tools" id="tools" aria-label="Shortcuts">
       <div class="grp"><span class="grp-label">Text</span>
@@ -300,6 +315,26 @@ textarea#code:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
     <p class="note">The bio box is 520 × 310 px and scrolls, like on recolor.me. Fan-made; not an official recolor.me tool.</p>
   </section>
   </div>
+
+  <!-- Preset manager: only shows when opened with ?dev on your own computer (file, localhost or 127.0.0.1) -->
+  <section class="panel" id="dev" hidden>
+    <h2>Preset manager</h2>
+    <p class="msg">Only you see this. Build presets here, then <b>Download presets.js</b> and put it next to <code>index.html</code>. The public Templates menu reads that file.</p>
+    <div class="row">
+      <input type="text" id="devName" placeholder="Preset name" maxlength="40">
+      <input type="text" id="devDesc" placeholder="Short description (optional)" maxlength="120" size="34">
+      <button type="button" id="devAdd" class="primary">Add the code box as a preset</button>
+    </div>
+    <div class="row">
+      <label class="msg">Upload presets (.txt or .bbcode, one preset per file): <input type="file" id="devFiles" accept=".txt,.bbcode,text/plain" multiple></label>
+    </div>
+    <div class="list" id="devList"></div>
+    <div class="row">
+      <button type="button" id="devDownload" class="primary">Download presets.js</button>
+      <button type="button" id="devReset">Start over from presets.js</button>
+      <span class="msg" id="devMsg"></span>
+    </div>
+  </section>
 </main>
 
 <!-- Tips and tricks, opened by the "?" button (like the other tools). -->
@@ -316,6 +351,7 @@ textarea#code:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
         <li><b>Citizen ID</b> shows that user's avatar and name in the profile header.</li>
         <li><b>Copy code</b>, then paste it into your bio on recolor.me. Bios allow 10,000 characters.</li>
         <li><b>Shortcut buttons</b> above the code wrap the text you've selected, or add ready-made code with the part to replace highlighted. Ctrl+B, Ctrl+I and Ctrl+U work too, and Ctrl+Z undoes.</li>
+        <li><b>Templates</b> (when there are some) gives you a ready-made bio to start from.</li>
         <li>Your draft is saved in this browser.</li>
       </ul>
     </section>
@@ -387,6 +423,7 @@ textarea#code:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
   </div>
 </dialog>
 
+<script src="presets.js"></script>
 <script>
 (function(){
 "use strict";
@@ -730,6 +767,80 @@ code.addEventListener("keydown",function(e){
   if(!(e.ctrlKey||e.metaKey)||e.altKey||e.shiftKey)return;
   var k={b:"b",i:"i",u:"u"}[e.key.toLowerCase()];if(k){e.preventDefault();insertSnippet(k);}
 });
+/* Templates menu for visitors (from presets.js) */
+var PRESETS=Array.isArray(window.BB_PRESETS)?window.BB_PRESETS.filter(function(p){return p&&typeof p.code==="string";}):[];
+var tplSel=document.getElementById("templates");
+function fillTemplates(list){
+  tplSel.length=1;
+  list.forEach(function(p,i){var o=document.createElement("option");o.value=String(i);o.textContent=p.name||("Template "+(i+1));if(p.description)o.title=p.description;tplSel.appendChild(o);});
+  tplSel.hidden=!list.length;
+}
+fillTemplates(PRESETS);
+tplSel.addEventListener("change",function(){
+  var list=devOn?devList:PRESETS,p=list[+tplSel.value];tplSel.value="";
+  if(!p)return;
+  if(code.value.trim()&&code.value!==p.code&&!confirm('Replace your code with "'+(p.name||"this template")+'"?'))return;
+  code.value=p.code;draw();save();
+});
+
+/* Preset manager: only with ?dev, and only on your own computer */
+var devOn=/[?&]dev\b/.test(location.search)&&(location.protocol==="file:"||/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname));
+var DEV_KEY="bb-dev-presets",devList=[];
+function devSave(){try{localStorage.setItem(DEV_KEY,JSON.stringify(devList));}catch(e){}fillTemplates(devList);devRender();}
+function devMsg(t,warn){var m=document.getElementById("devMsg");m.textContent=t;m.className="msg"+(warn?" warn":"");}
+function devRender(){
+  var box=document.getElementById("devList");box.innerHTML="";
+  if(!devList.length){box.innerHTML='<p class="msg">No presets yet. Add the code box, or upload files.</p>';return;}
+  devList.forEach(function(p,i){
+    var row=document.createElement("div");row.className="item";
+    row.innerHTML='<input type="text" class="nm" maxlength="40" aria-label="Name"><input type="text" class="ds" maxlength="120" aria-label="Description" placeholder="Description">'+
+      '<span class="len"></span><button type="button" data-act="load">Load</button><button type="button" data-act="update" title="Replace this preset with the code box">Update</button>'+
+      '<button type="button" data-act="up" title="Move up">↑</button><button type="button" data-act="down" title="Move down">↓</button><button type="button" data-act="del">Delete</button>';
+    row.querySelector(".nm").value=p.name||"";row.querySelector(".ds").value=p.description||"";
+    var n=p.code.length;row.querySelector(".len").textContent=n.toLocaleString()+" chars";if(n>10000)row.querySelector(".len").className="len warn";
+    row.querySelector(".nm").addEventListener("change",function(e){p.name=e.target.value.trim();devSave();});
+    row.querySelector(".ds").addEventListener("change",function(e){p.description=e.target.value.trim();devSave();});
+    row.addEventListener("click",function(e){
+      var act=e.target.getAttribute&&e.target.getAttribute("data-act");if(!act)return;
+      if(act==="load"){code.value=p.code;draw();save();devMsg('Loaded "'+p.name+'" into the code box.');}
+      if(act==="update"){if(confirm('Replace "'+p.name+'" with what\'s in the code box?')){p.code=code.value;devSave();devMsg('Updated "'+p.name+'".');}}
+      if(act==="up"&&i>0){devList.splice(i-1,0,devList.splice(i,1)[0]);devSave();}
+      if(act==="down"&&i<devList.length-1){devList.splice(i+1,0,devList.splice(i,1)[0]);devSave();}
+      if(act==="del"&&confirm('Delete "'+p.name+'" from the list? (presets.js only changes when you download a new one.)')){devList.splice(i,1);devSave();}
+    });
+    box.appendChild(row);
+  });
+}
+if(devOn){
+  try{var stored=JSON.parse(localStorage.getItem(DEV_KEY)||"null");devList=Array.isArray(stored)?stored:PRESETS.map(function(p){return {name:p.name||"",description:p.description||"",code:p.code};});}catch(e){devList=PRESETS.slice();}
+  document.getElementById("dev").hidden=false;fillTemplates(devList);devRender();
+  document.getElementById("devAdd").addEventListener("click",function(){
+    var nm=document.getElementById("devName").value.trim(),ds=document.getElementById("devDesc").value.trim();
+    if(!nm){devMsg("Give the preset a name first.",true);return;}
+    if(!code.value.trim()){devMsg("The code box is empty.",true);return;}
+    devList.push({name:nm,description:ds,code:code.value});devSave();
+    document.getElementById("devName").value="";document.getElementById("devDesc").value="";devMsg('Added "'+nm+'".');
+  });
+  document.getElementById("devFiles").addEventListener("change",function(e){
+    var files=[].slice.call(e.target.files||[]),done=0;
+    files.forEach(function(f){var r=new FileReader();r.onload=function(){
+      devList.push({name:f.name.replace(/\.[^.]+$/,"").replace(/[_-]+/g," ").trim().slice(0,40),description:"",code:String(r.result).replace(/\r\n?/g,"\n").replace(/^\uFEFF/,"")});
+      if(++done===files.length){devSave();devMsg("Added "+done+" preset"+(done>1?"s":"")+". Check the names, then download presets.js.");e.target.value="";}
+    };r.readAsText(f);});
+  });
+  document.getElementById("devDownload").addEventListener("click",function(){
+    var body="// Starting templates for the BBCode Previewer's \"Templates\" menu.\n// Made with the Preset manager: open index.html?dev on your own computer, then \"Download presets.js\".\n"+
+      "window.BB_PRESETS = "+JSON.stringify(devList.map(function(p){return {name:p.name,description:p.description||"",code:p.code};}),null,2).replace(/</g,"\\u003c")+";\n";
+    var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([body],{type:"text/javascript"}));a.download="presets.js";
+    document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},1000);
+    devMsg("Downloaded presets.js with "+devList.length+" preset"+(devList.length===1?"":"s")+". Put it next to index.html (replace the old one).");
+  });
+  document.getElementById("devReset").addEventListener("click",function(){
+    if(!confirm("Throw away your unsaved changes here and start again from the current presets.js?"))return;
+    devList=PRESETS.map(function(p){return {name:p.name||"",description:p.description||"",code:p.code};});devSave();devMsg("Back to what presets.js has.");
+  });
+}
+
 /* Tips and tricks box */
 var help=document.getElementById("help");
 document.getElementById("help-btn").addEventListener("click",function(){help.showModal();});
