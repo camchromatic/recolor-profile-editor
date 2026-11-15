@@ -66,6 +66,9 @@ h1 { font: 700 2rem/1.1 Arial, Helvetica, sans-serif; letter-spacing: -0.02em; m
 .help-grid ul { margin: 0; padding-left: 16px; font-size: 13px; line-height: 1.42; }
 .help-grid li + li { margin-top: 3px; }
 .help-grid code { font: 12px ui-monospace, Consolas, monospace; background: var(--bg); border: 1px solid var(--line); border-radius: 4px; padding: 0 3px; }
+.help-grid .ex { display: flex; gap: 6px; align-items: flex-start; margin-top: 6px; }
+.help-grid .ex code { flex: 1; display: block; white-space: pre-wrap; padding: 5px 7px; border-radius: 6px; }
+.help-grid .try { padding: 3px 9px; font-size: 12px; }
 /* Two halves: code on the left, preview on the right (stacked on narrow screens). */
 .split { display: grid; grid-template-columns: 1fr; gap: 16px; align-items: start; }
 @media (min-width: 1000px) { .split { grid-template-columns: minmax(320px, 1fr) auto; } }
@@ -337,79 +340,53 @@ textarea#code:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
   </div>
   <div class="help-grid">
     <section>
-      <h3>Start</h3>
+      <h3>Basics</h3>
       <ul>
-        <li><b>Type or paste</b> your BBCode on the left. The preview updates as you type.</li>
-        <li><b>Citizen ID</b> shows that user's avatar and name in the profile header.</li>
-        <li><b>Copy code</b>, then paste it into your bio on recolor.me. Bios allow 10,000 characters.</li>
-        <li><b>Shortcut buttons</b> above the code wrap the text you've selected, or add ready-made code with the part to replace highlighted. Ctrl+B, Ctrl+I and Ctrl+U work too, and Ctrl+Z undoes.</li>
-        <li><b>Templates</b> (when there are some) gives you a ready-made bio to start from.</li>
-        <li>Your draft is saved in this browser.</li>
-      </ul>
-    </section>
-    <section>
-      <h3>Preview</h3>
-      <ul>
-        <li><b>Fit check</b> shows only what fits in the 310px box, with no scrolling. Put a <code>[hidden]</code> button at the bottom to open the rest.</li>
-        <li><b>Full height</b> shows the whole bio at once.</li>
-        <li>Click hidden buttons, bricks, spoilers and blur to try them.</li>
-        <li><b>Re-roll dice</b> gives new numbers to <code>[rand]</code>, <code>[random]</code>, <code>[d6]</code> and <code>[d20]</code>.</li>
+        <li>Type code on the left; the preview updates as you go. Your draft is saved in this browser.</li>
+        <li>Add a <b>Citizen ID</b> to see your own avatar and name.</li>
+        <li><b>Copy code</b>, then paste it into your recolor.me bio (10,000 characters max).</li>
+        <li><b>Fit check</b> shows only what fits without scrolling (520 × 310px).</li>
       </ul>
     </section>
     <section>
       <h3>Text</h3>
       <ul>
-        <li><code>[b]</code> <code>[i]</code> <code>[u]</code> <code>[s]</code> <code>[color=#hex]</code> <code>[size=1–7]</code> <code>[font=Name]</code></li>
-        <li><code>[gradient start=#hex end=#hex]</code>: use hex codes; color names look odd on the real site.</li>
-        <li><code>[center]</code> <code>[left]</code> <code>[right]</code> <code>[rule]</code> <code>[br]</code></li>
+        <li><b>Use hex colors</b> (like <code>#ad533b</code>). Pick one from your avatar with <b>Pick color from avatar</b>.</li>
+        <li>Set your own text color: Night mode turns plain text light gray.</li>
       </ul>
+      <div class="ex"><code>[center][size=5][b]Your Name[/b][/size]
+[color=#ad533b]pronouns · a fun fact[/color][/center]</code><button type="button" class="try">Try</button></div>
+      <div class="ex"><code>[gradient start=#ff6699 end=#6699ff]Rainbow text[/gradient]</code><button type="button" class="try">Try</button></div>
     </section>
     <section>
       <h3>Layout</h3>
       <ul>
-        <li><code>[box bgcolor=hex radius=7 padding=10]</code></li>
-        <li><code>[columns]…[nextcol]…[/columns]</code> <code>[list][*]…[/list]</code></li>
-        <li><code>[hidden=Label color=pink]</code> <code>[spoiler]</code> <code>[brick=3]</code> <code>[blur]</code></li>
+        <li>Columns are about 240px each. Put formatting inside each column.</li>
+        <li>Put a <code>[hidden]</code> button at the bottom to tuck away the rest.</li>
+        <li>If Enter doesn't add space, use <code>[br]</code>.</li>
       </ul>
+      <div class="ex"><code>[columns][b]Likes[/b]
+art, tea[nextcol][b]Dislikes[/b]
+mornings[/columns]</code><button type="button" class="try">Try</button></div>
+      <div class="ex"><code>[hidden=Read more]More about me...[/hidden]</code><button type="button" class="try">Try</button></div>
     </section>
     <section>
       <h3>Images</h3>
       <ul>
-        <li><code>[img height=50 filter=sepia]URL[/img]</code></li>
-        <li><code>[av]ID</code> <code>[ghost]ID</code> <code>[robot]ID</code> <code>[selfie]ID</code> <code>[outfit]ID</code></li>
-        <li><code>:emote:</code> <code>[viewername]</code></li>
+        <li>Usable width is about <b>500px</b>. Only height resizes: <code>[img height=100]</code>.</li>
+        <li>Your avatar fades in over the top-left of the bio (about 200 × 90px).</li>
+        <li><code>[img right]</code> floats a big picture over the bio; <code>[img align=right]</code> lets text wrap around it.</li>
       </ul>
-    </section>
-    <section>
-      <h3>Sizes</h3>
-      <ul>
-        <li>The bio box shows <b>520 × 310px</b>. About <b>500px</b> of the width is usable; the scrollbar takes the rest.</li>
-        <li>Full-width images: up to about <b>500px</b> wide. Wider ones shrink to fit.</li>
-        <li>Two columns: about <b>240px</b> each. Banners: about <b>500 × 100–150px</b>. Icons and buttons: <b>32–64px</b>.</li>
-        <li>Only height resizes an image: <code>[img height=100]</code>. Width is ignored.</li>
-        <li>Your avatar sits behind the top-left of the bio, about <b>200 × 90px</b>, faded.</li>
-      </ul>
+      <div class="ex"><code>[img height=100]IMAGE URL[/img]</code><button type="button" class="try">Try</button></div>
     </section>
     <section>
       <h3>Box tricks</h3>
       <ul>
-        <li><b>Solid background:</b> wrap your whole bio in <code>[box bgcolor=ffffff radius=0 padding=10]</code>…<code>[/box]</code>. It hides the faded avatar and keeps your colors the same in Night mode.</li>
-        <li>Boxes shrink to fit what's inside. They stretch across once a line of text (or an image about 500px wide) fills them.</li>
-        <li><b>Border:</b> a box inside a box: <code>[box bgcolor=999999 padding=3][box bgcolor=ffffff]</code>…<code>[/box][/box]</code></li>
-        <li><b>Pill labels:</b> <code>radius=20 padding=4</code>. <b>Square corners:</b> <code>radius=0</code>.</li>
-        <li><b>Framed buttons:</b> put <code>[url=…][img]…[/img][/url]</code> inside a bordered box, with a small label under it.</li>
+        <li><b>Solid background:</b> wrap your whole bio in a box. It hides the faded avatar and keeps colors the same in Night mode.</li>
+        <li><b>Border:</b> a box inside a box. <b>Pill label:</b> <code>radius=20 padding=4</code>.</li>
       </ul>
-    </section>
-    <section>
-      <h3>Other tricks</h3>
-      <ul>
-        <li><b>Set your own text color</b> with <code>[color]</code>: Night mode turns the default text light gray.</li>
-        <li><code>[img right]</code> (no <code>align=</code>) floats over the bio, great for a big character picture. <code>[img align=right]</code> lets text wrap around it.</li>
-        <li>If Enter doesn't add space, use <code>[br]</code>.</li>
-        <li>Put formatting inside each <code>[columns]</code> cell, not around the whole thing.</li>
-        <li><code>[rule]</code> can break the code after it; put a <code>[size]</code> tag right after.</li>
-        <li>Tags left open at the very end still work, which saves characters.</li>
-      </ul>
+      <div class="ex"><code>[box bgcolor=ffffff radius=0 padding=10]Your whole bio[/box]</code><button type="button" class="try">Try</button></div>
+      <div class="ex"><code>[box bgcolor=999999 padding=3][box bgcolor=ffffff]Framed[/box][/box]</code><button type="button" class="try">Try</button></div>
     </section>
   </div>
 </dialog>
@@ -863,6 +840,12 @@ if(devOn){
 var help=document.getElementById("help");
 document.getElementById("help-btn").addEventListener("click",function(){help.showModal();});
 document.getElementById("help-close").addEventListener("click",function(){help.close();});
+/* "Try" adds the example to your code, where the cursor is */
+help.addEventListener("click",function(e){
+  if(!e.target.classList.contains("try"))return;
+  SNIPS._ex=e.target.previousElementSibling.textContent.replace(/\{\{/g,"{ {");help.close();
+  code.setSelectionRange(code.selectionEnd,code.selectionEnd);insertSnippet("_ex");
+});
 help.addEventListener("click",function(e){if(e.target===help)help.close();});
 
 var SAMPLE="[center][size=5][gradient start=#6f86ff end=#c77dff]Your Name Here[/gradient][/size]\n[size=2][color=#777]pronouns · time zone · a few words about you[/color][/size]\n[box bgcolor=eef0ff radius=10 padding=8][b]About me[/b]\nWrite a little about yourself here. :smile:[/box][columns][box bgcolor=eef7ec padding=6][b]Likes[/b][/box]\nart · music :music:[nextcol][box bgcolor=fff1e3 padding=6][b]Dislikes[/b][/box]\nrainy Mondays :rain:[/columns][hidden=Read more]Hi [viewername]! Thanks for visiting. :wave:\n[list][*]Favorite color[*]Favorite food[*]Favorite game[/list]\n[spoiler]a secret[/spoiler] [brick=3]You found it![/brick]\n\n[bar=60 color=#6f86ff]Goal progress 60%[/bar][/hidden][/center]";
