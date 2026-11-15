@@ -11,7 +11,7 @@ It's not an official recolor.me tool, and it isn't connected to your account. No
 ## Features
 - Live preview as a **profile bio** or a **forum post**.
 - Type a **Citizen ID** to show that user's avatar and name in the profile header.
-- `[av]`, `[ghost]`, `[robot]`, `[selfie]`, `[outfit]`, emotes and sign language show the real images from recolor.me. If one can't load, a labelled box shows instead.
+- `[av]`, `[ghost]`, `[robot]`, `[selfie]`, `[outfit]`, emotes and sign language show the real images from recolor.me. If one can't load, a labeled box shows instead.
 - **Fit check** shows whether your bio fits the box without scrolling. Put a `[hidden]` button at the bottom to open the rest.
 - **Shortcut buttons** for text, links, images and layouts like "Text + picture", "Solid background" and "Read more".
 - **Templates** to start from (listed in `presets.js`).
@@ -30,5 +30,5 @@ It's not an official recolor.me tool, and it isn't connected to your account. No
 ## Privacy
 The tool sends nothing about you anywhere, except the Citizen ID you type, which goes to the name lookup. Avatar and emote images load from recolor.me. There's no sign-in and there are no trackers.
 
-## Licence
-The code is released under the MIT licence: see [LICENSE](LICENSE). The avatar, emote and other images shown in the preview belong to recolor.me and are loaded from its website. They aren't part of this repo or covered by this licence.
+## License
+The code is released under the MIT license: see [LICENSE](LICENSE). The avatar, emote and other images shown in the preview belong to recolor.me and are loaded from its website. They aren't part of this repo or covered by this license.

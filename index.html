@@ -17,7 +17,7 @@
 </script>
 <meta name="description" content="Write recolor.me BBCode on the left and see a live preview on the right. Fan-made by Cam.">
 <style>
-/* Theme colours copied from Font Sheet / Swatch Page Maker / Palette Lab. */
+/* Theme colors copied from Font Sheet / Swatch Page Maker / Palette Lab. */
 :root {
   --bg: #e4e4e6; --panel: #f8f8f8; --ink: #1c1c1e; --muted: #6c6c70; --line: #d1d1d6;
   --accent: #0a7cff; --warn: #d6342c; --ok: #1f8a3b; --code: #ffffff;
@@ -268,9 +268,9 @@ textarea#code:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
         <button type="button" data-snip="i" title="Italic (Ctrl+I)"><i>I</i></button>
         <button type="button" data-snip="u" title="Underline (Ctrl+U)"><u>U</u></button>
         <button type="button" data-snip="s" title="Strike"><s>S</s></button>
-        <button type="button" data-snip="color" title="Text colour">Colour</button>
+        <button type="button" data-snip="color" title="Text color">Color</button>
         <button type="button" data-snip="size" title="Text size (1 to 7)">Size</button>
-        <button type="button" data-snip="center" title="Centre">Centre</button>
+        <button type="button" data-snip="center" title="Center">Center</button>
       </div>
       <div class="grp"><span class="grp-label">Add</span>
         <button type="button" data-snip="url" title="Link">Link</button>
@@ -280,10 +280,10 @@ textarea#code:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
         <button type="button" data-snip="spoiler" title="Spoiler">Spoiler</button>
       </div>
       <div class="grp"><span class="grp-label">Layout</span>
-        <button type="button" data-snip="picright" title="Centred text on the left, picture on the right">Text + picture</button>
-        <button type="button" data-snip="picleft" title="Picture on the left, centred text on the right">Picture + text</button>
+        <button type="button" data-snip="picright" title="Centered text on the left, picture on the right">Text + picture</button>
+        <button type="button" data-snip="picleft" title="Picture on the left, centered text on the right">Picture + text</button>
         <button type="button" data-snip="cols" title="Two columns side by side">2 columns</button>
-        <button type="button" data-snip="box" title="Coloured box">Box</button>
+        <button type="button" data-snip="box" title="Colored box">Box</button>
         <button type="button" data-snip="solid" title="Solid background for your whole bio (hides the faded avatar)">Solid background</button>
         <button type="button" data-snip="more" title="A Read more button that opens hidden text">Read more</button>
       </div>
@@ -368,7 +368,7 @@ textarea#code:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
       <h3>Text</h3>
       <ul>
         <li><code>[b]</code> <code>[i]</code> <code>[u]</code> <code>[s]</code> <code>[color=#hex]</code> <code>[size=1–7]</code> <code>[font=Name]</code></li>
-        <li><code>[gradient start=#hex end=#hex]</code>: use hex codes; colour names look odd on the real site.</li>
+        <li><code>[gradient start=#hex end=#hex]</code>: use hex codes; color names look odd on the real site.</li>
         <li><code>[center]</code> <code>[left]</code> <code>[right]</code> <code>[rule]</code> <code>[br]</code></li>
       </ul>
     </section>
@@ -402,7 +402,7 @@ textarea#code:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
     <section>
       <h3>Box tricks</h3>
       <ul>
-        <li><b>Solid background:</b> wrap your whole bio in <code>[box bgcolor=ffffff radius=0 padding=10]</code>…<code>[/box]</code>. It hides the faded avatar and keeps your colours the same in Night mode.</li>
+        <li><b>Solid background:</b> wrap your whole bio in <code>[box bgcolor=ffffff radius=0 padding=10]</code>…<code>[/box]</code>. It hides the faded avatar and keeps your colors the same in Night mode.</li>
         <li>Boxes shrink to fit what's inside. They stretch across once a line of text (or an image about 500px wide) fills them.</li>
         <li><b>Border:</b> a box inside a box: <code>[box bgcolor=999999 padding=3][box bgcolor=ffffff]</code>…<code>[/box][/box]</code></li>
         <li><b>Pill labels:</b> <code>radius=20 padding=4</code>. <b>Square corners:</b> <code>radius=0</code>.</li>
@@ -412,7 +412,7 @@ textarea#code:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
     <section>
       <h3>Other tricks</h3>
       <ul>
-        <li><b>Set your own text colour</b> with <code>[color]</code>: Night mode turns the default text light grey.</li>
+        <li><b>Set your own text color</b> with <code>[color]</code>: Night mode turns the default text light gray.</li>
         <li><code>[img right]</code> (no <code>align=</code>) floats over the bio, great for a big character picture. <code>[img align=right]</code> lets text wrap around it.</li>
         <li>If Enter doesn't add space, use <code>[br]</code>.</li>
         <li>Put formatting inside each <code>[columns]</code> cell, not around the whole thing.</li>
@@ -428,7 +428,7 @@ textarea#code:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
 (function(){
 "use strict";
 
-/* ---------- placeholders: solid colour boxes with a label (no art) ---------- */
+/* ---------- placeholders: solid color boxes with a label (no art) ---------- */
 function svgURI(svg){return "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg);}
 var phCache={};
 function placeholder(w,h,label,color,ly){
@@ -467,7 +467,7 @@ function attr(s){return escapeHTML(s);}
 var COLOR_RE=/^(#?[0-9a-fA-F]{3}|#?[0-9a-fA-F]{6}|[a-zA-Z]+)$/;
 function cssColor(c){c=String(c||"").trim();if(!COLOR_RE.test(c))return null;if(/^[0-9a-fA-F]{3}$|^[0-9a-fA-F]{6}$/.test(c))return "#"+c;return c;}
 function hexColor(c){c=String(c||"").trim().replace(/^#/,"");if(/^[0-9a-fA-F]{3}$/.test(c))c=c.replace(/./g,"$&$&");if(/^[0-9a-fA-F]{6}$/.test(c))return [parseInt(c.slice(0,2),16),parseInt(c.slice(2,4),16),parseInt(c.slice(4,6),16)];
-  /* colour names: let the browser translate (the real site gives odd colours for names) */
+  /* color names: let the browser translate (the real site gives odd colors for names) */
   var cv=document.createElement("canvas").getContext("2d");cv.fillStyle="#000";cv.fillStyle=c;var v=cv.fillStyle;if(/^#[0-9a-f]{6}$/i.test(v))return hexColor(v);return null;}
 function hex2(n){n=Math.max(0,Math.min(255,n|0));return (n<16?"0":"")+n.toString(16);}
 function safeURL(u){u=String(u||"").replace(/[\u0000-\u0020\u007f]/g,"");if(/^(https?:)?\/\//i.test(u))return u;if(/^\//.test(u))return "https://recolor.me"+u;if(/^mailto:/i.test(u))return u;if(/^[a-z][a-z0-9+.-]*:/i.test(u))return null;return u;}
@@ -847,7 +847,7 @@ document.getElementById("help-btn").addEventListener("click",function(){help.sho
 document.getElementById("help-close").addEventListener("click",function(){help.close();});
 help.addEventListener("click",function(e){if(e.target===help)help.close();});
 
-var SAMPLE="[center][size=5][gradient start=#6f86ff end=#c77dff]Your Name Here[/gradient][/size]\n[size=2][color=#777]pronouns · time zone · a few words about you[/color][/size]\n[box bgcolor=eef0ff radius=10 padding=8][b]About me[/b]\nWrite a little about yourself here. :smile:[/box][columns][box bgcolor=eef7ec padding=6][b]Likes[/b][/box]\nart · music :music:[nextcol][box bgcolor=fff1e3 padding=6][b]Dislikes[/b][/box]\nrainy Mondays :rain:[/columns][hidden=Read more]Hi [viewername]! Thanks for visiting. :wave:\n[list][*]Favourite colour[*]Favourite food[*]Favourite game[/list]\n[spoiler]a secret[/spoiler] [brick=3]You found it![/brick]\n\n[bar=60 color=#6f86ff]Goal progress 60%[/bar][/hidden][/center]";
+var SAMPLE="[center][size=5][gradient start=#6f86ff end=#c77dff]Your Name Here[/gradient][/size]\n[size=2][color=#777]pronouns · time zone · a few words about you[/color][/size]\n[box bgcolor=eef0ff radius=10 padding=8][b]About me[/b]\nWrite a little about yourself here. :smile:[/box][columns][box bgcolor=eef7ec padding=6][b]Likes[/b][/box]\nart · music :music:[nextcol][box bgcolor=fff1e3 padding=6][b]Dislikes[/b][/box]\nrainy Mondays :rain:[/columns][hidden=Read more]Hi [viewername]! Thanks for visiting. :wave:\n[list][*]Favorite color[*]Favorite food[*]Favorite game[/list]\n[spoiler]a secret[/spoiler] [brick=3]You found it![/brick]\n\n[bar=60 color=#6f86ff]Goal progress 60%[/bar][/hidden][/center]";
 var KEY="rcm-bbcode-draft";
 function load(){try{var s=localStorage.getItem(KEY);if(s!=null)return s;}catch(e){}return SAMPLE;}
 function save(){try{localStorage.setItem(KEY,code.value);}catch(e){}}
@@ -909,7 +909,7 @@ document.getElementById("copy").addEventListener("click",function(){
   if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(code.value).then(done,function(){code.select();document.execCommand("copy");done();});
   else{code.select();document.execCommand("copy");done();}
 });
-/* a recolor.me image that fails to load becomes its labelled box */
+/* a recolor.me image that fails to load becomes its labeled box */
 stage.addEventListener("error",function(e){
   var el=e.target;if(!el||el.tagName!=="IMG"||!el.getAttribute("data-fb"))return;
   el.src=el.getAttribute("data-fb");el.removeAttribute("data-fb");el.classList.remove("imgflip");
