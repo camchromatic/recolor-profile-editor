@@ -4,37 +4,103 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>recolor.me BBCode Previewer</title>
+<title>BBCode Previewer</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<script>
+  // Apply the saved theme before the page draws, so it doesn't flash. Dark by default.
+  try {
+    const saved = JSON.parse(localStorage.getItem("bb-look") || "{}");
+    document.documentElement.dataset.mode = ["light", "gray", "dark"].includes(saved.mode) ? saved.mode : "dark";
+  } catch (e) {
+    document.documentElement.dataset.mode = "dark";
+  }
+</script>
 <meta name="description" content="Write recolor.me BBCode on the left and see a live preview on the right. Fan-made by Cam.">
 <style>
-:root{
-  --bg:#232628; --panel:#2d3134; --line:#3d4245; --text:#e9e6e1; --muted:#a8a29b; --accent:#6fd3c6;
+/* Theme colours copied from Font Sheet / Swatch Page Maker / Palette Lab. */
+:root {
+  --bg: #e4e4e6; --panel: #f8f8f8; --ink: #1c1c1e; --muted: #6c6c70; --line: #d1d1d6;
+  --accent: #0a7cff; --warn: #d6342c; --ok: #1f8a3b; --code: #ffffff;
+  color-scheme: light;
 }
-*{box-sizing:border-box}
-html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
-header{padding:18px 16px 6px;max-width:1400px;margin:0 auto}
-header h1{margin:0;font-size:22px;letter-spacing:.2px}
-header h1 .w span:nth-child(5n+1){color:#ff7aa8}header h1 .w span:nth-child(5n+2){color:#ffc46b}
-header h1 .w span:nth-child(5n+3){color:#9be37a}header h1 .w span:nth-child(5n+4){color:#6fd3c6}header h1 .w span:nth-child(5n+5){color:#a99bff}
-header p{margin:4px 0 0;color:var(--muted);font-size:13px}
-main{display:grid;grid-template-columns:minmax(300px,1fr) auto;gap:16px;padding:12px 16px 24px;max-width:1400px;margin:0 auto;align-items:start}
-@media (max-width:980px){main{grid-template-columns:1fr}}
-@media (max-width:600px){textarea#code{min-height:300px}}
-.pane{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;min-width:0}
-.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
-.bar .grow{flex:1}
-.bar label{font-size:13px;color:var(--muted);display:flex;gap:6px;align-items:center}
-button,select{font:inherit;font-size:13px;background:#3a3f43;color:var(--text);border:1px solid #50565a;border-radius:6px;padding:5px 10px;cursor:pointer}
-button:hover,select:hover{background:#454b50}
-textarea#code{width:100%;min-height:560px;resize:vertical;background:#1b1d1f;color:#f1ede7;border:1px solid var(--line);border-radius:8px;padding:10px;font:13px/1.55 ui-monospace,Consolas,"Courier New",monospace;tab-size:2}
-textarea#code:focus{outline:2px solid var(--accent);outline-offset:1px}
-#count{font-size:13px;color:var(--muted)}#count.over{color:#ff8a8a;font-weight:bold}
-.stage{background:#7d8a7a;border-radius:8px;padding:18px;overflow:auto;max-width:100%}
-.note{font-size:12px;color:var(--muted);margin:8px 2px 0}
-details.help{margin-top:12px;font-size:13px;color:var(--muted)}
-details.help summary{cursor:pointer;color:var(--text)}
-details.help code{background:#1b1d1f;padding:1px 4px;border-radius:4px;color:#f1ede7}
-footer{max-width:1400px;margin:0 auto;padding:0 16px 24px;color:var(--muted);font-size:12px}
+:root[data-mode="gray"] {
+  --bg: #4a4a4d; --panel: #575759; --ink: #f4f4f5; --muted: #d0d0d4; --line: #6c6c70;
+  --accent: #2f8cff; --warn: #ffc2bb; --ok: #b6f0b0; --code: #3f3f42;
+  color-scheme: dark;
+}
+:root[data-mode="dark"] {
+  --bg: #111111; --panel: #1f1f1f; --ink: #f2f2f2; --muted: #9a9a9e; --line: #363636;
+  --accent: #2f8cff; --warn: #ff5f57; --ok: #8fe08a; --code: #161616;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 Arial, Helvetica, sans-serif; }
+main { max-width: 1400px; margin: 0 auto; padding: 24px 16px 64px; }
+header {
+  display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between;
+  gap: 12px 24px; margin-bottom: 24px;
+}
+h1 { font: 700 2rem/1.1 Arial, Helvetica, sans-serif; letter-spacing: -0.02em; margin: 0 0 4px; }
+.lead { color: var(--muted); margin: 0; }
+.look { display: flex; gap: 8px; align-items: center; }
+.look-label { font: 500 11px/1 Arial, Helvetica, sans-serif; text-transform: uppercase; letter-spacing: .09em; color: var(--muted); }
+.seg { display: flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { background: var(--panel); color: var(--ink); border: 0; border-radius: 0; padding: 6px 12px; font-size: 0.85rem; font-weight: 400; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button.on { background: var(--ink); color: var(--bg); }
+/* "?" button and Tips and tricks box, like the other tools. */
+#help-btn {
+  width: 26px; height: 26px; padding: 0; border-radius: 50%; margin-right: 6px; flex: none; cursor: pointer;
+  font: 700 13px Arial, Helvetica, sans-serif; background: var(--panel); color: var(--ink); border: 1px solid var(--line);
+}
+#help {
+  width: min(900px, calc(100% - 32px)); max-height: calc(100vh - 32px); padding: 16px 22px 20px;
+  border: 1px solid var(--line); border-radius: 14px; background: var(--panel); color: var(--ink);
+}
+#help::backdrop { background: rgb(0 0 0 / .45); }
+.help-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.help-head h2 { margin: 0; font: 700 18px Arial, Helvetica, sans-serif; }
+#help-close { width: 30px; height: 30px; padding: 0; cursor: pointer; border-radius: 8px; background: var(--bg); color: var(--ink); border: 1px solid var(--line); font-weight: 400; }
+.help-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px 26px; }
+.help-grid h3 { margin: 0 0 5px; font: 700 11px Arial, Helvetica, sans-serif; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+.help-grid ul { margin: 0; padding-left: 16px; font-size: 13px; line-height: 1.42; }
+.help-grid li + li { margin-top: 3px; }
+.help-grid code { font: 12px ui-monospace, Consolas, monospace; background: var(--bg); border: 1px solid var(--line); border-radius: 4px; padding: 0 3px; }
+/* Two halves: code on the left, preview on the right (stacked on narrow screens). */
+.split { display: grid; grid-template-columns: 1fr; gap: 16px; align-items: start; }
+@media (min-width: 1000px) { .split { grid-template-columns: minmax(320px, 1fr) auto; } }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; min-width: 0; }
+.panel h2 { margin: 0; font: 700 1.2rem/1.2 Arial, Helvetica, sans-serif; }
+.bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
+.bar .grow { flex: 1; }
+.bar label { font-size: 14px; color: var(--muted); display: flex; gap: 6px; align-items: center; }
+.bar input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--accent); }
+button {
+  font: inherit; font-size: 14px; font-weight: 600; padding: 7px 14px; border-radius: 10px;
+  border: 1px solid var(--line); background: var(--panel); color: var(--ink); cursor: pointer;
+}
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+select, .who {
+  font: 14px Arial, Helvetica, sans-serif; color: var(--ink); background: var(--bg);
+  border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px;
+}
+.who { width: 120px; }
+.who.id { width: 90px; }
+.who::placeholder { color: var(--muted); }
+textarea#code {
+  width: 100%; min-height: 560px; resize: vertical; background: var(--code); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 10px; padding: 12px; font: 13px/1.55 ui-monospace, Consolas, "Courier New", monospace; tab-size: 2;
+}
+textarea#code:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+@media (max-width: 600px) { textarea#code { min-height: 300px; } }
+#count { font-size: 14px; color: var(--muted); }
+#count.over { color: var(--warn); font-weight: 700; }
+.stage { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 18px; overflow: auto; max-width: 100%; }
+.note { color: var(--muted); font-size: 14px; margin: 10px 2px 0; }
+.cc-foot { max-width: 1400px; margin: 0 auto; padding: 0 16px 40px; color: var(--muted); font-size: 13px; line-height: 1.6; text-align: center; }
+.cc-foot a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+.cc-foot a:hover { color: var(--ink); }
+@media print { .cc-foot { display: none; } }
 
 /* ---------- recolor.me look (preview only) ---------- */
 .rcm{color:#333;font-family:Verdana,sans-serif;text-align:left}
@@ -125,8 +191,6 @@ footer{max-width:1400px;margin:0 auto;padding:0 16px 24px;color:var(--muted);fon
 .rcm .profile_name .citizen_id{opacity:.75;font-size:10px;margin:0 10px 0 0;vertical-align:middle;line-height:1}
 .rcm .profile_options{position:relative;z-index:2;padding:0 10px 13px 0;text-align:right;line-height:1}
 .rcm .profile_options .button{font-size:15px;margin:0 0 0 8px;padding:4px 7px 5px;cursor:default}
-.who{width:120px;font:inherit;font-size:13px;background:#1b1d1f;color:var(--text);border:1px solid #50565a;border-radius:6px;padding:4px 8px}
-.who.id{width:80px}
 .bio{position:relative;z-index:2;margin:0 0 10px;padding:15px 10px 0;background:linear-gradient(rgba(255,255,255,0) 0%,rgba(255,255,255,.5) 3%,rgba(255,255,255,.75) 6%,rgba(255,255,255,.75) 98%,rgba(255,255,255,0) 100%)}
 .bio_content{position:relative;height:310px;overflow:hidden scroll;overflow-wrap:break-word;font-size:16px;line-height:18px;text-align:center}
 .full .bio_content{height:auto;overflow:visible}
@@ -134,8 +198,8 @@ footer{max-width:1400px;margin:0 auto;padding:0 16px 24px;color:var(--muted);fon
 .fitcheck .bio_content{overflow:hidden;scrollbar-gutter:stable}
 .fitcheck.opened .bio_content{overflow:hidden scroll}
 .fitcheck.over:not(.opened) .bio_content{box-shadow:inset 0 -3px 0 #e04848}
-#fitMsg{margin:8px 2px 0;font-size:13px;font-weight:600}
-#fitMsg.ok{color:#8fe08a}#fitMsg.bad{color:#ff8a8a}#fitMsg.info{color:var(--muted)}
+#fitMsg{margin:10px 2px 0;font-size:14px;font-weight:700}
+#fitMsg.ok{color:var(--ok)}#fitMsg.bad{color:var(--warn)}#fitMsg.info{color:var(--muted)}
 .night .bio_container{background:rgba(16,16,16,.9)}
 .night .bio{background:transparent}
 .night .bio_content{color:#b4b4b4}
@@ -148,34 +212,50 @@ footer{max-width:1400px;margin:0 auto;padding:0 16px 24px;color:var(--muted);fon
 </style>
 </head>
 <body>
-<header>
-  <h1><span class="w" id="wordmark">recolor.me</span> BBCode Previewer</h1>
-  <p>Write your code on the left and see it on the right. Fan-made by Cam; not an official recolor.me tool. Avatars, ghosts, robots and emotes load from recolor.me by ID (a labelled box shows if one can't load).</p>
-</header>
 <main>
-  <section class="pane">
+  <header>
+    <div>
+      <h1>BBCode Previewer</h1>
+      <p class="lead">Write recolor.me BBCode and see your profile bio live, with your real avatar and name.</p>
+    </div>
+    <div class="look">
+      <button id="help-btn" type="button" title="Tips and tricks" aria-label="Tips and tricks" aria-haspopup="dialog">?</button>
+      <span class="look-label">Theme</span>
+      <div class="seg" role="group" aria-label="Page colors">
+        <button type="button" data-mode="dark">Dark</button>
+        <button type="button" data-mode="gray">Gray</button>
+        <button type="button" data-mode="light">Light</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="split">
+  <!-- Left half: your code -->
+  <section class="panel">
     <div class="bar">
-      <strong class="grow">Your code</strong>
+      <h2 class="grow">Your code</h2>
       <span id="count">0 / 10,000</span>
-      <button id="copy" type="button">Copy code</button>
+    </div>
+    <div class="bar">
+      <button id="copy" type="button" class="primary">Copy code</button>
       <button id="sample" type="button" title="Replace your code with a sample bio that shows off lots of tags">Load example</button>
       <button id="clear" type="button">Clear</button>
     </div>
     <textarea id="code" spellcheck="false" aria-label="BBCode"></textarea>
-    <details class="help">
-      <summary>Tag cheat sheet</summary>
-      <p><code>[b] [i] [u] [s]</code> · <code>[color=#hex]</code> · <code>[size=1–7]</code> · <code>[font=Name]</code> · <code>[gradient start=#hex end=#hex]</code> · <code>[center] [left] [right]</code> · <code>[box bgcolor=hex radius=7 padding=10]</code> · <code>[columns]…[nextcol]…[/columns]</code> · <code>[list][*]…[/list]</code> · <code>[hidden=Label color=pink]</code> · <code>[spoiler]</code> · <code>[brick=3]</code> · <code>[blur]</code> · <code>[img height=50 filter=sepia]</code> · <code>[av]ID</code> <code>[ghost]ID</code> <code>[robot]ID</code> <code>[selfie]ID</code> <code>[outfit]ID</code> · <code>[viewername]</code> · <code>[rule]</code> <code>[br]</code> · <code>:emote:</code></p>
-      <p>Gradients need hex codes on the real site; colour names give odd colours there.</p>
-    </details>
   </section>
-  <section class="pane">
+
+  <!-- Right half: the preview -->
+  <section class="panel">
     <div class="bar">
+      <h2 class="grow">Preview</h2>
       <label>Show as
         <select id="mode">
           <option value="bio">Profile bio</option>
           <option value="post">Forum post</option>
         </select>
       </label>
+    </div>
+    <div class="bar">
       <label id="whoBox">Name <input class="who" id="uname" value="" placeholder="Username" maxlength="30" aria-label="Username"> ID <input class="who id" id="uid" value="" placeholder="Citizen ID" inputmode="numeric" maxlength="8" aria-label="User ID"></label>
       <label title="Shows only what fits in the 310px box, with no scrolling. Use a [hidden] button at the bottom to open the rest."><input type="checkbox" id="fit"> Fit check</label>
       <label><input type="checkbox" id="full"> Full height</label>
@@ -185,10 +265,62 @@ footer{max-width:1400px;margin:0 auto;padding:0 16px 24px;color:var(--muted);fon
     </div>
     <div class="stage" id="stage"></div>
     <p id="fitMsg" hidden></p>
-    <p class="note">The bio box is 520 × 310 px and scrolls, like on the site. Click hidden buttons, bricks, spoilers and blur to try them.</p>
+    <p class="note">The bio box is 520 × 310 px and scrolls, like on recolor.me. Fan-made; not an official recolor.me tool.</p>
   </section>
+  </div>
 </main>
-<footer>Last checked against recolor.me on 15 November 2026. Some tags may change on the site.</footer>
+
+<!-- Tips and tricks, opened by the "?" button (like the other tools). -->
+<dialog id="help" aria-labelledby="help-title">
+  <div class="help-head">
+    <h2 id="help-title">Tips and tricks</h2>
+    <button id="help-close" type="button" aria-label="Close">✕</button>
+  </div>
+  <div class="help-grid">
+    <section>
+      <h3>Start</h3>
+      <ul>
+        <li><b>Type or paste</b> your BBCode on the left. The preview updates as you type.</li>
+        <li><b>Citizen ID</b> shows that user's avatar and name in the profile header.</li>
+        <li><b>Copy code</b>, then paste it into your bio on recolor.me. Bios allow 10,000 characters.</li>
+        <li>Your draft is saved in this browser.</li>
+      </ul>
+    </section>
+    <section>
+      <h3>Preview</h3>
+      <ul>
+        <li><b>Fit check</b> shows only what fits in the 310px box, with no scrolling. Put a <code>[hidden]</code> button at the bottom to open the rest.</li>
+        <li><b>Full height</b> shows the whole bio at once.</li>
+        <li>Click hidden buttons, bricks, spoilers and blur to try them.</li>
+        <li><b>Re-roll dice</b> gives new numbers to <code>[rand]</code>, <code>[random]</code>, <code>[d6]</code> and <code>[d20]</code>.</li>
+      </ul>
+    </section>
+    <section>
+      <h3>Text</h3>
+      <ul>
+        <li><code>[b]</code> <code>[i]</code> <code>[u]</code> <code>[s]</code> <code>[color=#hex]</code> <code>[size=1–7]</code> <code>[font=Name]</code></li>
+        <li><code>[gradient start=#hex end=#hex]</code>: use hex codes; colour names look odd on the real site.</li>
+        <li><code>[center]</code> <code>[left]</code> <code>[right]</code> <code>[rule]</code> <code>[br]</code></li>
+      </ul>
+    </section>
+    <section>
+      <h3>Layout</h3>
+      <ul>
+        <li><code>[box bgcolor=hex radius=7 padding=10]</code></li>
+        <li><code>[columns]…[nextcol]…[/columns]</code> <code>[list][*]…[/list]</code></li>
+        <li><code>[hidden=Label color=pink]</code> <code>[spoiler]</code> <code>[brick=3]</code> <code>[blur]</code></li>
+      </ul>
+    </section>
+    <section>
+      <h3>Images</h3>
+      <ul>
+        <li><code>[img height=50 filter=sepia]URL[/img]</code></li>
+        <li><code>[av]ID</code> <code>[ghost]ID</code> <code>[robot]ID</code> <code>[selfie]ID</code> <code>[outfit]ID</code></li>
+        <li><code>:emote:</code> <code>[viewername]</code></li>
+      </ul>
+    </section>
+  </div>
+</dialog>
 
 <script>
 (function(){
@@ -490,7 +622,19 @@ function toHTML(src){
 /* ---------- UI ---------- */
 var code=document.getElementById("code"),stage=document.getElementById("stage"),count=document.getElementById("count");
 var mode=document.getElementById("mode"),full=document.getElementById("full"),fit=document.getElementById("fit"),night=document.getElementById("night");
-var wm=document.getElementById("wordmark");wm.innerHTML=wm.textContent.split("").map(function(ch){return "<span>"+ch+"</span>";}).join("");
+/* Theme (Dark / Gray / Light), remembered in this browser, like the other tools */
+var root=document.documentElement,lookButtons=document.querySelectorAll(".seg [data-mode]");
+function markLook(){lookButtons.forEach(function(b){b.classList.toggle("on",b.dataset.mode===(root.dataset.mode||"light"));});}
+lookButtons.forEach(function(b){b.addEventListener("click",function(){
+  if(b.dataset.mode==="light")delete root.dataset.mode;else root.dataset.mode=b.dataset.mode;
+  markLook();try{localStorage.setItem("bb-look",JSON.stringify({mode:root.dataset.mode||"light"}));}catch(e){}
+});});
+markLook();
+/* Tips and tricks box */
+var help=document.getElementById("help");
+document.getElementById("help-btn").addEventListener("click",function(){help.showModal();});
+document.getElementById("help-close").addEventListener("click",function(){help.close();});
+help.addEventListener("click",function(e){if(e.target===help)help.close();});
 
 var SAMPLE="[center][size=5][gradient start=#ff6fa8 end=#6f8bff]Welcome to my profile![/gradient][/size]\n[size=2][color=#777]artist · bbcode wizard · site lurker[/color][/size]\n[box bgcolor=f6e1ec radius=10 padding=8][b]About me[/b]\nI draw cute monsters and make themes. :uwu:[/box][columns][box bgcolor=e1f0f6 padding=6][b]Likes[/b][/box]\npastels · dragons :dragon:[nextcol][box bgcolor=eef6e1 padding=6][b]Friends[/b][/box]\n[selfie]16733[/selfie][selfie big]16733[/selfie][/columns][hidden=Read more color=pink][rule]Hi [viewername]! Thanks for visiting. :heart:\n[av win]16733[/av]\n[list][*]bubble tea :boba:[*]rainy days[*]old forums[/list]\n[spoiler]secret![/spoiler] [brick=3]You found it![/brick]\n\n[bar=70 color=#ff6fa8]Art goal 70%[/bar][/hidden][/center]";
 var KEY="rcm-bbcode-draft";
