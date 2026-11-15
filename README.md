@@ -1,10 +1,10 @@
-# BBCode Previewer
+# recolor.me Profile Editor
 
 Write recolor.me BBCode and see your profile bio live, with your real avatar and name.
 
 **Try it:** https://camchromatic.com/bbcode-previewer/
 
-BBCode Previewer is a fan-made tool for [recolor.me](https://recolor.me) profile bios. You type your code on the left, and the preview on the right shows it the way the site does: the 520 × 310 bio box, your avatar, your Citizen ID and username. Hidden sections, bricks, spoilers and blur can be clicked, just like on the site.
+recolor.me Profile Editor is a fan-made tool for [recolor.me](https://recolor.me) profile bios. You type your code on the left, and the preview on the right shows it the way the site does: the 520 × 310 bio box, your avatar, your Citizen ID and username. Hidden sections, bricks, spoilers and blur can be clicked, just like on the site.
 
 It's not an official recolor.me tool, and it isn't connected to your account. Nothing is saved to recolor.me: copy your code and paste it into your bio yourself.
 
