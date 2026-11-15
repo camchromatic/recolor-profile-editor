@@ -73,6 +73,9 @@ h1 { font: 700 2rem/1.1 Arial, Helvetica, sans-serif; letter-spacing: -0.02em; m
 .panel h2 { margin: 0; font: 700 1.2rem/1.2 Arial, Helvetica, sans-serif; }
 .bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
 .bar .grow { flex: 1; }
+#pickColor { width: 34px; height: 30px; padding: 2px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); cursor: pointer; }
+#pickHex { font: 13px ui-monospace, Consolas, monospace; color: var(--ink); min-width: 62px; }
+#pickMsg, #saveMsg { color: var(--muted); font-size: 14px; }
 .bar label { font-size: 14px; color: var(--muted); display: flex; gap: 6px; align-items: center; }
 .bar input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--accent); }
 button {
@@ -312,6 +315,15 @@ textarea#code:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
       <label><input type="checkbox" id="night"> Night mode</label>
       <span class="grow"></span>
       <button id="reroll" type="button" title="New numbers for [rand], [random], [d6] and [d20] in your code" hidden>Re-roll dice</button>
+    </div>
+    <div class="bar" id="pickBar">
+      <button id="pickBtn" type="button" title="Click, then click any color on your avatar (or anywhere on the screen)">Pick color from avatar</button>
+      <input type="color" id="pickColor" value="#6f86ff" aria-label="Chosen color" title="Chosen color (click to adjust it)">
+      <code id="pickHex">#6f86ff</code>
+      <button id="pickCopy" type="button">Copy</button>
+      <button id="pickText" type="button" title="Add [color] with this color, around any selected text">Text color</button>
+      <button id="pickBox" type="button" title="Add a [box] with this background color, around any selected text">Box color</button>
+      <span class="msg" id="pickMsg" aria-live="polite"></span>
     </div>
     <div class="stage" id="stage"></div>
     <p id="fitMsg" hidden></p>
@@ -754,6 +766,25 @@ function insertSnippet(key){
   var pick=marks.filter(function(k){return k.ph&&k.to>k.from;})[0];
   if(pick)code.setSelectionRange(st+pick.from,st+pick.to);else code.setSelectionRange(st+out.length,st+out.length);
 }
+/* Color picker: pick a color from the avatar (or anywhere on screen) to match your bio to it.
+   recolor.me images can't be read by the page itself, so this uses the browser's eyedropper (Chrome, Edge, Opera). */
+(function(){
+  var inp=document.getElementById("pickColor"),hex=document.getElementById("pickHex"),msg=document.getElementById("pickMsg"),btn=document.getElementById("pickBtn");
+  function say(t){msg.textContent=t;clearTimeout(say.t);say.t=setTimeout(function(){msg.textContent="";},5000);}
+  function setColor(c){c=String(c).toLowerCase();if(/^#[0-9a-f]{6}$/.test(c)){inp.value=c;hex.textContent=c;}}
+  inp.addEventListener("input",function(){setColor(inp.value);});
+  if(!window.EyeDropper){btn.title="Your browser can't pick colors from the screen. Try Chrome or Edge, or use the color box next to this.";}
+  btn.addEventListener("click",function(){
+    if(!window.EyeDropper){say("Your browser can't pick from the screen. Try Chrome or Edge, or click the color box to choose one.");return;}
+    new EyeDropper().open().then(function(r){setColor(r.sRGBHex);say("Got it: "+hex.textContent);}).catch(function(){});
+  });
+  document.getElementById("pickCopy").addEventListener("click",function(){
+    var t=hex.textContent;
+    (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){say("Copied "+t);},function(){say("Couldn't copy. Select the code and copy it yourself.");});
+  });
+  document.getElementById("pickText").addEventListener("click",function(){SNIPS._pick="[color="+hex.textContent+"]{{*text}}[/color]";insertSnippet("_pick");});
+  document.getElementById("pickBox").addEventListener("click",function(){SNIPS._pick="[box bgcolor="+hex.textContent.slice(1)+" radius=0 padding=10]{{*text}}[/box]";insertSnippet("_pick");});
+})();
 document.getElementById("tools").addEventListener("click",function(e){var b=e.target.closest("[data-snip]");if(b)insertSnippet(b.getAttribute("data-snip"));});
 code.addEventListener("keydown",function(e){
   if(!(e.ctrlKey||e.metaKey)||e.altKey||e.shiftKey)return;
