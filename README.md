@@ -2,7 +2,7 @@
 
 Write recolor.me BBCode and see your profile bio live, with your real avatar and name.
 
-**Try it:** https://camchromatic.com/bbcode-previewer/
+**Try it:** https://camchromatic.com/recolor-profile-editor/
 
 recolor.me Profile Editor is a fan-made tool for [recolor.me](https://recolor.me) profile bios. You type your code on the left, and the preview on the right shows it the way the site does: the 520 × 310 bio box, your avatar, your Citizen ID and username. Hidden sections, bricks, spoilers and blur can be clicked, just like on the site.
 
@@ -19,7 +19,7 @@ It's not an official recolor.me tool, and it isn't connected to your account. No
 - Your draft is saved in your own browser.
 
 ## How to use it
-- **Online:** open https://camchromatic.com/bbcode-previewer/
+- **Online:** open https://camchromatic.com/recolor-profile-editor/
 - **On your own computer:** download `index.html` and open it in a web browser. No install and no libraries. Images still load from recolor.me, so you need an internet connection. The name lookup only works on the website, so type your name yourself.
 
 ## What's in this repo
