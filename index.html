@@ -261,6 +261,8 @@ textarea#code:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
       <button id="sample" type="button" title="Replace your code with a sample bio that shows off lots of tags">Load example</button>
       <button id="clear" type="button">Clear</button>
       <select id="templates" aria-label="Start from a template" hidden><option value="">Templates…</option></select>
+      <button id="savePreset" type="button" title="Save what's in the code box as a template (only you see this button)" hidden>Save as preset</button>
+      <span class="msg" id="saveMsg" aria-live="polite"></span>
     </div>
     <div class="tools" id="tools" aria-label="Shortcuts">
       <div class="grp"><span class="grp-label">Text</span>
@@ -319,7 +321,7 @@ textarea#code:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
   <!-- Preset manager: only shows when opened with ?dev on your own computer (file, localhost or 127.0.0.1) -->
   <section class="panel" id="dev" hidden>
     <h2>Preset manager</h2>
-    <p class="msg">Only you see this. Build presets here, then <b>Download presets.js</b> and put it next to <code>index.html</code>. The public Templates menu reads that file.</p>
+    <p class="msg">Only you see this. Type code in the code box and press <b>Save as preset</b>. When the tool runs through <code>dev-server.py</code>, every change here goes straight into <code>presets.js</code>. Otherwise, use <b>Download presets.js</b> and put it next to <code>index.html</code>. The public Templates menu reads that file.</p>
     <div class="row">
       <input type="text" id="devName" placeholder="Preset name" maxlength="40">
       <input type="text" id="devDesc" placeholder="Short description (optional)" maxlength="120" size="34">
@@ -786,7 +788,13 @@ tplSel.addEventListener("change",function(){
 /* Preset manager: only with ?dev, and only on your own computer */
 var devOn=/[?&]dev\b/.test(location.search)&&(location.protocol==="file:"||/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname));
 var DEV_KEY="bb-dev-presets",devList=[];
-function devSave(){try{localStorage.setItem(DEV_KEY,JSON.stringify(devList));}catch(e){}fillTemplates(devList);devRender();}
+function devSave(){
+  try{localStorage.setItem(DEV_KEY,JSON.stringify(devList));}catch(e){}fillTemplates(devList);devRender();
+  // With dev-server.py running, write presets.js straight away. Otherwise it's kept in this browser until you download.
+  return fetch("/__save-presets",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(devList)})
+    .then(function(r){if(!r.ok)throw 0;return true;}).catch(function(){return false;});
+}
+function saveMsg(t){var m=document.getElementById("saveMsg");m.textContent=t;clearTimeout(saveMsg.t);saveMsg.t=setTimeout(function(){m.textContent="";},6000);}
 function devMsg(t,warn){var m=document.getElementById("devMsg");m.textContent=t;m.className="msg"+(warn?" warn":"");}
 function devRender(){
   var box=document.getElementById("devList");box.innerHTML="";
@@ -814,6 +822,18 @@ function devRender(){
 if(devOn){
   try{var stored=JSON.parse(localStorage.getItem(DEV_KEY)||"null");devList=Array.isArray(stored)?stored:PRESETS.map(function(p){return {name:p.name||"",description:p.description||"",code:p.code};});}catch(e){devList=PRESETS.slice();}
   document.getElementById("dev").hidden=false;fillTemplates(devList);devRender();
+  var sp=document.getElementById("savePreset");sp.hidden=false;
+  sp.addEventListener("click",function(){
+    if(!code.value.trim()){saveMsg("The code box is empty.");return;}
+    var nm=(prompt("Name for this preset:")||"").trim().slice(0,40);
+    if(!nm)return;
+    var old=devList.filter(function(p){return p.name.toLowerCase()===nm.toLowerCase();})[0];
+    if(old){if(!confirm('"'+old.name+'" already exists. Replace it with this code?'))return;old.code=code.value;nm=old.name;}
+    else devList.push({name:nm,description:"",code:code.value});
+    devSave().then(function(ok){
+      saveMsg(ok?'Saved "'+nm+'" to presets.js.':'Saved "'+nm+'" in this browser. To publish it, use Download presets.js below.');
+    });
+  });
   document.getElementById("devAdd").addEventListener("click",function(){
     var nm=document.getElementById("devName").value.trim(),ds=document.getElementById("devDesc").value.trim();
     if(!nm){devMsg("Give the preset a name first.",true);return;}
